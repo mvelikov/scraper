@@ -55,16 +55,14 @@ while (list($url, $dummy) = each($urlsArray)) {
     usleep(400);
 }
 
+$dsn = 'mysql:dbname=scraper;host=localhost;port=8889';
+$user = 'root';
+$password = 'root';
 
-$mongo = new Mongo();
+try {
+    $dbh = new PDO($dsn, $user, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''));
+} catch (PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
+}
 
-$db = $mongo->scraper;
-
-$collection = $db->sites;
-
-
-$collection->insert(array(
-    '_id' => sha1($host),
-    'pages' => $database
-));
 echo 'done';
