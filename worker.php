@@ -2,19 +2,16 @@
 
 require 'simple_html_dom/simple_html_dom.php';
 
-$urlsArray = array(
-    'http://mihailvelikov.eu/' => 1,
-);
+$host = 'http://rmsoft.eu/';
 
-$mongo = new Mongo();
-$db = $mongo->scraper;
-$collection = $db->list;
+$urlsArray = array(
+    $host => 1,
+);
 
 $database = array();
 
-$hostComponents = parse_url($urlsArray[0]);
-$host = 'http://mihailvelikov.eu';
-$cnt = 0;
+var_dump($urlsArray, $host);
+
 // foreach($urlsArray as $url => $dummy) {
 while (list($url, $dummy) = each($urlsArray)) {
     $html = file_get_html($url);
@@ -25,14 +22,16 @@ while (list($url, $dummy) = each($urlsArray)) {
 
         $parsedUrlComponents = parse_url($a->href);
         
-        $parsedUrl = $parsedUrlComponents['scheme'] . '://' . $parsedUrlComponents['host'];
+        if (!empty($parsedUrlComponents['scheme']) && !empty($parsedUrlComponents['host'])) {
+            $parsedUrl = $parsedUrlComponents['scheme'] . '://' . $parsedUrlComponents['host'] . '/';
         
-        if ($parsedUrl == $host) {
-            $urlsArray[$a->href] = 1;
+            if ($parsedUrl == $host) {
+                $urlsArray[$a->href] = 1;
+            }
         }
     }
     foreach ($html->find('h1') as $h1) {
-        $elements['h1'][] = $h1->text;
+        $elements['h1'][] = $h1->plaintext;
     }
     foreach ($html->find('meta') as $meta) {
         if ($meta->name == 'description') {
@@ -43,5 +42,29 @@ while (list($url, $dummy) = each($urlsArray)) {
             $elements['meta_description'] = $meta->value;
         }
     }
+    foreach ($html->find('title') as $title) {
+        $elements['title'] = $title->plaintext;
+    }
+    foreach ($html->find('body') as $key => $body) {
+        $elements['words'] = str_word_count($body->plaintext);
+    }
+
+    $elements['url'] = $url;
+
+    $database[sha1($url)] = $elements;
+    usleep(400);
 }
-var_dump($urlsArray);
+
+
+$mongo = new Mongo();
+
+$db = $mongo->scraper;
+
+$collection = $db->sites;
+
+
+$collection->insert(array(
+    '_id' => sha1($host),
+    'pages' => $database
+));
+echo 'done';
