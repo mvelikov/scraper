@@ -34,14 +34,16 @@ while (list($url, $dummy) = each($urlsArray)) {
         $elements['h1'][] = $h1->plaintext;
     }
     foreach ($html->find('meta') as $meta) {
+        $elements['meta_description'] = $elements['meta_keywords'] = 'NULL';
         if ($meta->name == 'description') {
             $elements['meta_description'] = $meta->value;
         }
 
-        if ($meta->name == 'description') {
-            $elements['meta_description'] = $meta->value;
+        if ($meta->name == 'keywords') {
+            $elements['meta_keywords'] = $meta->value;
         }
     }
+    $elements['title'] = 'NULL';
     foreach ($html->find('title') as $title) {
         $elements['title'] = $title->plaintext;
     }
@@ -65,19 +67,54 @@ try {
     echo 'Connection failed: ' . $e->getMessage();
 }
 
-$sqlInsertSite = sprintf("INSERT IGNORE INTO sites (name) VALUES('%s');", $host);
+$insertSiteSql = sprintf("INSERT IGNORE INTO sites (name) VALUES('%s');", $host);
 
-$dbh->exec($sqlInsertSite);
+$dbh->exec($insertSiteSql);
 
 $siteId = $siteExists = false;
 $fetchSiteSql = sprintf("SELECT site_id FROM sites WHERE name = '%s' LIMIT 1", $host);
-var_dump($fetchSiteSql);
+
 foreach ($dbh->query($fetchSiteSql) as $row) {
     $siteExists = true;
     $siteId = $row['site_id'];
 }
 
+foreach ($database as $key => $page) {
+    $insertPageSql = $dbh->prepare("INSERT INTO pages (url, words, site_id) VALUES (:url, :words, :site_id);");
+        
+    if ($insertPageSql->execute(array(
+            ':url' => $page['url'],
+            ':words' => $page['words'],
+            ':site_id' => $siteId
+        ))) {
+        var_dump($page);
+        $lastInsertedPageId = $dbh->lastInsertId();
+       
+        $insertMetaSql = $dbh->prepare("INSERT INTO meta (description, keywords, title, page_id) 
+        VALUES (:description, :keywords, :title, :page_id)");
+        
 
-var_dump($siteId);
+        $insertMetaSql->execute(array(
+            ':description' => $page['meta_description'],
+            ':keywords' => $page['meta_keywords'],
+            ':title' => $page['title'],
+            ':page_id' => $lastInsertedPageId
+        ));
+
+        foreach ($page['h1'] as $key => $h1) {
+            $insertHeadingSql = $dbh->prepare("INSERT INTO headings (text, type, page_id) 
+                VALUES (:text, :type, :page_id)"); 
+
+            $insertHeadingSql->execute(array(
+                ':text' => $h1,
+                ':type' => 'h1',
+                ':page_id' => $lastInsertedPageId,
+            ));
+        }
+
+       
+    }
+}
+
 
 echo 'done';
