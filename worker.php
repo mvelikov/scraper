@@ -65,4 +65,19 @@ try {
     echo 'Connection failed: ' . $e->getMessage();
 }
 
+$sqlInsertSite = sprintf("INSERT IGNORE INTO sites (name) VALUES('%s');", $host);
+
+$dbh->exec($sqlInsertSite);
+
+$siteId = $siteExists = false;
+$fetchSiteSql = sprintf("SELECT site_id FROM sites WHERE name = '%s' LIMIT 1", $host);
+var_dump($fetchSiteSql);
+foreach ($dbh->query($fetchSiteSql) as $row) {
+    $siteExists = true;
+    $siteId = $row['site_id'];
+}
+
+
+var_dump($siteId);
+
 echo 'done';
