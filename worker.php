@@ -67,6 +67,9 @@ try {
     echo 'Connection failed: ' . $e->getMessage();
 }
 
+$start = microtime(true);
+for ($i = 0; $i < 10000; $i++) {
+
 $insertSiteSql = $dbh->prepare("INSERT IGNORE INTO sites (name) VALUES(:host);");
 
 $insertSiteSql->execute(array(':host' => $host));
@@ -83,11 +86,11 @@ foreach ($database as $key => $page) {
     $insertPageSql = $dbh->prepare("INSERT INTO pages (url, words, site_id) VALUES (:url, :words, :site_id);");
         
     if ($insertPageSql->execute(array(
-            ':url' => $page['url'],
+            ':url' => $page['url'] . rand() . rand() . rand(),
             ':words' => $page['words'],
             ':site_id' => $siteId
         ))) {
-        var_dump($page);
+        
         $lastInsertedPageId = $dbh->lastInsertId();
        
         $insertMetaSql = $dbh->prepare("INSERT INTO meta (description, keywords, title, page_id) 
@@ -114,5 +117,7 @@ foreach ($database as $key => $page) {
     }
 }
 
+}
 
+echo microtime(true) - $start;
 echo 'done';
