@@ -67,9 +67,9 @@ try {
     echo 'Connection failed: ' . $e->getMessage();
 }
 
-$insertSiteSql = sprintf("INSERT IGNORE INTO sites (name) VALUES('%s');", $host);
+$insertSiteSql = $dbh->prepare("INSERT IGNORE INTO sites (name) VALUES(:host);");
 
-$dbh->exec($insertSiteSql);
+$insertSiteSql->execute(array(':host' => $host));
 
 $siteId = $siteExists = false;
 $fetchSiteSql = sprintf("SELECT site_id FROM sites WHERE name = '%s' LIMIT 1", $host);
@@ -107,12 +107,10 @@ foreach ($database as $key => $page) {
 
             $insertHeadingSql->execute(array(
                 ':text' => $h1,
-                ':type' => 'h1',
+                ':type' => '1',
                 ':page_id' => $lastInsertedPageId,
             ));
         }
-
-       
     }
 }
 
