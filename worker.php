@@ -63,7 +63,7 @@ $db = $mongo->scraper;
 $collection = $db->sites;
 
 $start = microtime(true);
-for ($i = 0; $i < 1000000; $i++ ) {
+for ($i = 0; $i < 10000; $i++ ) {
 
     $collection->insert(array(
         '_id' => sha1($host),
