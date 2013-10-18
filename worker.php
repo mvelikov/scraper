@@ -62,9 +62,14 @@ $db = $mongo->scraper;
 
 $collection = $db->sites;
 
+$start = microtime(true);
+for ($i = 0; $i < 1000000; $i++ ) {
 
-$collection->insert(array(
-    '_id' => sha1($host),
-    'pages' => $database
-));
+    $collection->insert(array(
+        '_id' => sha1($host),
+        'pages' => $database
+    ));
+}
+
+echo microtime(true) - $start;
 echo 'done';
