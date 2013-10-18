@@ -86,7 +86,7 @@ foreach ($database as $key => $page) {
     $insertPageSql = $dbh->prepare("INSERT INTO pages (url, words, site_id) VALUES (:url, :words, :site_id);");
         
     if ($insertPageSql->execute(array(
-            ':url' => $page['url'] . rand() . rand() . rand(),
+            ':url' => $page['url'],
             ':words' => $page['words'],
             ':site_id' => $siteId
         ))) {
