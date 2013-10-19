@@ -66,8 +66,10 @@ $start = microtime(true);
 for ($i = 0; $i < 10000; $i++ ) {
 
     $collection->insert(array(
-        '_id' => sha1($host),
+        '_id' => sha1($host . rand() . rand() . rand()),
         'pages' => $database
+    ), array(
+        'fsync' => false
     ));
 }
 
