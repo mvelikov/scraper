@@ -2,7 +2,7 @@
 
 require 'simple_html_dom/simple_html_dom.php';
 
-$host = 'http://rmsoft.eu/';
+$host = 'http://luxdiets.com/';
 
 $urlsArray = array(
     $host => 1,
@@ -53,6 +53,7 @@ while (list($url, $dummy) = each($urlsArray)) {
 
     $database[sha1($url)] = $elements;
     usleep(400);
+    break;
 }
 
 
@@ -64,12 +65,10 @@ $collection = $db->sites;
 
 $start = microtime(true);
 for ($i = 0; $i < 10000; $i++ ) {
-
-    $collection->insert(array(
-        '_id' => sha1($host . rand() . rand() . rand()),
-        'pages' => $database
-    ), array(
-        'fsync' => false
+    $elements['_id'] = new MongoId();
+    $collection->insert($elements
+    , array(
+        'fsync' => true
     ));
 }
 
