@@ -2,7 +2,7 @@
 
 require 'simple_html_dom/simple_html_dom.php';
 
-$host = 'http://rmsoft.eu/';
+$host = 'http://luxdiets.com/';
 
 $urlsArray = array(
     $host => 1,
@@ -12,10 +12,16 @@ $database = array();
 
 var_dump($urlsArray, $host);
 
+$mongo = new Mongo();
+
+$db = $mongo->scraper;
+
+$collection = $db->sites;
+
 // foreach($urlsArray as $url => $dummy) {
 while (list($url, $dummy) = each($urlsArray)) {
     $html = file_get_html($url);
-
+    if (!is_object($html)) continue;
     $elements = array();
 
     foreach ($html->find('a') as $a) {
@@ -50,21 +56,17 @@ while (list($url, $dummy) = each($urlsArray)) {
     }
 
     $elements['url'] = $url;
+    $elements['host'] = $host;
+    $elements['type'] = 'page';
 
-    $database[sha1($url)] = $elements;
-    usleep(400);
+
+    $collection->insert($elements);
+    // $database[] = $elements;
+    usleep(1000);
 }
 
 
-$mongo = new Mongo();
-
-$db = $mongo->scraper;
-
-$collection = $db->sites;
 
 
-$collection->insert(array(
-    '_id' => sha1($host),
-    'pages' => $database
-));
+
 echo 'done';
