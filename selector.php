@@ -1,6 +1,5 @@
 <?php
 
-$host = 'http://rmsoft.eu/';
 $mongo = new Mongo();
 
 $db = $mongo->scraper;
