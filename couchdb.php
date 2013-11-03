@@ -1,5 +1,26 @@
 <?php
 
+
+function curl($url, $data = array(), $type = 'GET') {
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+    $response = curl_exec($ch);
+    if(!$response) {
+        throw new Exception("Error responsing curl request!", 1);
+        die();
+    }
+    return $response;
+}
+
+$localhost = 'http://localhost:5984/';
+
+
 require 'simple_html_dom/simple_html_dom.php';
 
 $host = 'http://mihailvelikov.eu/';
@@ -10,7 +31,6 @@ $urlsArray = array(
 
 $database = array();
 
-var_dump($urlsArray, $host);
 
 // foreach($urlsArray as $url => $dummy) {
 while (list($url, $dummy) = each($urlsArray)) {
@@ -57,19 +77,9 @@ while (list($url, $dummy) = each($urlsArray)) {
 }
 
 
-$mongo = new Mongo();
-
-$db = $mongo->scraper;
-
-$collection = $db->sites;
-
 $start = microtime(true);
 for ($i = 0; $i < 10000; $i++ ) {
-    $elements['_id'] = new MongoId();
-    $collection->insert($elements
-    , array(
-        'fsync' => true
-    ));
+    curl($localhost . 'scraper', $elements, 'POST');
 }
 
 echo microtime(true) - $start;
