@@ -17,7 +17,8 @@ $fetchSiteSql = sprintf("SELECT site_id FROM sites WHERE name = '%s' LIMIT 1", $
 $start = microtime(true);
 
 for ($i = 0; $i < 100000; $i++) {
-    $dbh->query($fetchSiteSql);
+    $res = $dbh->query($fetchSiteSql);
+    $res->fetch();
 }
 
 echo microtime(true) - $start;

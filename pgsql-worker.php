@@ -1,20 +1,13 @@
 <?php
 
 require_once 'crawler.php';
-$dsn = 'mysql:dbname=scraper;host=localhost;port=8889';
-$user = 'root';
-$password = 'root';
 
-try {
-    $dbh = new PDO($dsn, $user, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''));
-} catch (PDOException $e) {
-    echo 'Connection failed: ' . $e->getMessage();
-}
+require_once 'pgsql.php';
 
 $start = microtime(true);
 for ($i = 0; $i < 10000; $i++) {
 
-    $insertSiteSql = $dbh->prepare("INSERT IGNORE INTO sites (name) VALUES(:host);");
+    $insertSiteSql = $dbh->prepare("INSERT INTO sites (name) VALUES(:host);");
 
     $insertSiteSql->execute(array(':host' => $host));
 
@@ -28,15 +21,16 @@ for ($i = 0; $i < 10000; $i++) {
 
     foreach ($database as $key => $page) {
         $insertPageSql = $dbh->prepare("INSERT INTO pages (url, words, site_id) VALUES (:url, :words, :site_id);");
+        $result = $insertPageSql->execute(array(
+            ':url' => $page['url'],
+            ':words' => $page['words'],
+            ':site_id' => $siteId
+        ));
+
+        if ($result) {
             
-        if ($insertPageSql->execute(array(
-                ':url' => $page['url'],
-                ':words' => $page['words'],
-                ':site_id' => $siteId
-            ))) {
-            
-            $lastInsertedPageId = $dbh->lastInsertId();
-           
+            $lastInsertedPageId = $dbh->lastInsertId('pages_page_id_seq');
+
             $insertMetaSql = $dbh->prepare("INSERT INTO meta (description, keywords, title, page_id) 
             VALUES (:description, :keywords, :title, :page_id)");
             
@@ -49,7 +43,7 @@ for ($i = 0; $i < 10000; $i++) {
             ));
 
             foreach ($page['h1'] as $key => $h1) {
-                $insertHeadingSql = $dbh->prepare("INSERT INTO headings (text, type, page_id) 
+                $insertHeadingSql = $dbh->prepare("INSERT INTO headings (txt, type, page_id) 
                     VALUES (:text, :type, :page_id)"); 
 
                 $insertHeadingSql->execute(array(
