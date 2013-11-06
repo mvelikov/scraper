@@ -2,7 +2,7 @@
 
 require 'simple_html_dom/simple_html_dom.php';
 
-$host = 'http://mihailvelikov.eu/';
+$host = 'http://rm-software.net/';
 
 $urlsArray = array(
     $host => 1,
@@ -35,11 +35,11 @@ while (list($url, $dummy) = each($urlsArray)) {
     }
     foreach ($html->find('meta') as $meta) {
         $elements['meta_description'] = $elements['meta_keywords'] = 'NULL';
-        if ($meta->name == 'description') {
+        if ($meta->name == 'description' && $meta->value) {
             $elements['meta_description'] = $meta->value;
         }
 
-        if ($meta->name == 'keywords') {
+        if ($meta->name == 'keywords' && $meta->value) {
             $elements['meta_keywords'] = $meta->value;
         }
     }

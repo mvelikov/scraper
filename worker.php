@@ -14,9 +14,12 @@ try {
 $start = microtime(true);
 for ($i = 0; $i < 10000; $i++) {
 
-    $insertSiteSql = $dbh->prepare("INSERT IGNORE INTO sites (name) VALUES(:host);");
+    $insertSiteSql = $dbh->prepare("INSERT IGNORE INTO sites (name, country_id) VALUES(:host, :country_id);");
 
-    $insertSiteSql->execute(array(':host' => $host));
+    $insertSiteSql->execute(array(
+        ':host' => $host . $i,
+        ':country_id' => $i % 2 + 1,
+        ));
 
     $siteId = $siteExists = false;
     $fetchSiteSql = sprintf("SELECT site_id FROM sites WHERE name = '%s' LIMIT 1", $host);
